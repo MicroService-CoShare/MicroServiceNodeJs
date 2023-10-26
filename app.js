@@ -1,64 +1,44 @@
-const express = require('express');
-const cors = require('cors');
-const mongoose = require('mongoose');
-const socketio = require('socket.io');
-const reviewRouter = require('./routes/review')
-const requestRouter = require('./routes/request')
+const express = require("express");
+const cors = require("cors");
+const mongoose = require("mongoose");
+const reviewRouter = require("./routes/review");
+const requestRouter = require("./routes/request");
+const { registerWithEureka } = require('./eureka/eureka-client');
+const keycloak = require("./keycloak/keycloak-config");
 
-require('dotenv').config();
+require("dotenv").config();
 
+// Create an instance of the Express.js application
 const app = express();
 app.use(cors());
 
+// Initialize Keycloak middleware
+app.use(keycloak.middleware());
+
 // Connect to MongoDB
 mongoose.set("strictQuery", true);
-mongoose.connect(process.env.MONGODB_URI)
+mongoose
+  .connect(process.env.MONGODB_URI, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+  })
   .then(() => {
-    console.log('Connected to database');
+    console.log("Connected to database");
   })
   .catch((error) => {
-    console.error('Error connecting to database:', error.message);
+    console.error("Error connecting to the database:", error.message);
   });
-
-
-
-// Initialize socket.io
-const server = require('http').createServer(app);
-
-const io = require('socket.io')(server, {
-  cors: {
-    origin: '*',
-    methods: ['GET', 'POST']
-  }
-});
-
-// Listen for new connections
-io.on('connection', (socket) => {
-  console.log('New client connected');
-
-  // Listen for new messages
-  socket.on('event', (data) => {
-    console.log('event triggered:', data);
-  io.emit('event', data);
-  
-  
-  });
-
-  // Listen for disconnections
-  socket.on('disconnect', () => {
-    console.log('Client disconnected');
-  });
-});
 
 app.use(express.json());
 
-
 // Routes
-app.use("/microservice", reviewRouter(app, io));
-app.use("/microservice", requestRouter(app, io));
-app.use(express.static(__dirname + "/public"));
-app.get("/", (req, res, next) => {
-  res.sendFile(__dirname + "/index.html");
+app.use("/review", reviewRouter);
+app.use("/request", requestRouter);
+
+const port = process.env.PORT || 3006;
+app.listen(port, () => {
+  console.log(`Server is running on port ${port}`);
 });
 
-module.exports = {server,io};
+// Register with Eureka
+// registerWithEureka();

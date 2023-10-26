@@ -22,7 +22,6 @@ const reviewRouter = (app, io) => {
 
     try {
       const newReview = await review.save();
-      io.emit("reviewAdded", "A new review has been added");
       res.status(201).json(newReview);
     } catch (error) {
       res.status(400).json({ message: error.message });

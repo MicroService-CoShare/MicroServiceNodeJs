@@ -21,7 +21,6 @@ const requestRouter = (app, io) => {
 
     try {
       const newRequest = await request.save();
-      io.emit("requestAdded", "A new request has been added");
       res.status(201).json(newRequest);
     } catch (error) {
       res.status(400).json({ message: error.message });
