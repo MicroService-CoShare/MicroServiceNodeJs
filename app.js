@@ -5,6 +5,7 @@ const reviewRouter = require("./routes/review");
 const requestRouter = require("./routes/request");
 const Keycloak = require("keycloak-connect");
 const { registerWithEureka } = require("./eureka/eureka-client");
+const { registerMongoDBWithEureka } = require("./eureka/eureka-client-mongods")
 
 require("dotenv").config();
 
@@ -61,4 +62,7 @@ app.listen(port, () => {
 
 
 // Register with Eureka
-// registerWithEureka();
+ registerWithEureka();
+
+ // Register with Eureka for mongo
+ registerMongoDBWithEureka();

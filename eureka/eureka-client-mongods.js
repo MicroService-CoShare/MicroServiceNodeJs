@@ -1,17 +1,17 @@
 const Eureka = require("eureka-js-client").Eureka;
 
-function registerWithEureka() {
-
+function registerMongoDBWithEureka() {
   const eureka = new Eureka({
     instance: {
-      app: "nodemicroservice",
-      hostName: "localhost",
+      app: "microservice", // Change the app name to reflect your MongoDB service
+      instanceId: "mongodb-instance",
+      hostName: "mongo", // Use the Docker container name
       ipAddr: "127.0.0.1",
       port: {
-        $: 3005,
+        $: 27017,
         "@enabled": true,
       },
-      vipAddress: "nodemicroservice",
+      vipAddress: "microservice", // Use the same service name as in your MONGODB_URI
       dataCenterInfo: {
         "@class": "com.netflix.appinfo.InstanceInfo$DefaultDataCenterInfo",
         name: "MyOwn",
@@ -19,7 +19,7 @@ function registerWithEureka() {
     },
     eureka: {
       serviceUrls: {
-        default: ["http://discovery:8761/eureka/"],
+        default: ["http://discovery:8761/eureka/"], // Eureka Server URL
       },
     },
   });
@@ -35,4 +35,4 @@ function registerWithEureka() {
   });
 }
 
-module.exports = { registerWithEureka };
+module.exports = { registerMongoDBWithEureka };
