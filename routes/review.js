@@ -1,10 +1,20 @@
 const Review = require("../model/review");
 const express = require("express");
 const router = express.Router();
+const Keycloak = require("keycloak-connect"); 
 
-const reviewRouter = (app, io) => {
-  // GET reviews
-  router.get("/getReviews", async (req, res) => {
+const keycloak = new Keycloak(
+  {
+    "realm": process.env.KEYCLOAK_REALM,
+    "auth-server-url": process.env.KEYCLOAK_AUTH_SERVER_URL,
+    "bearer-only": true,
+    "resource": process.env.KEYCLOAK_CLIENT_ID,
+  }
+);
+
+const reviewRouter = (app) => {
+  // GET reviews (secured with Keycloak)
+  router.get("/getReviews", keycloak.protect(), async (req, res) => {
     try {
       const reviews = await Review.find();
       res.json(reviews);
@@ -13,8 +23,8 @@ const reviewRouter = (app, io) => {
     }
   });
 
-  // Add a review
-  router.post("/addReview", async (req, res) => {
+  // Add a review (secured with Keycloak)
+  router.post("/addReview", keycloak.protect(), async (req, res) => {
     const review = new Review({
       rating: req.body.rating,
       feedback: req.body.feedback,
@@ -28,15 +38,13 @@ const reviewRouter = (app, io) => {
     }
   });
 
-  // Update a review
-  router.put("/updateReview/:id", async (req, res) => {
+  // Update a review (secured with Keycloak)
+  router.put("/updateReview/:id", keycloak.protect(), async (req, res) => {
     const { id } = req.params;
     try {
-      const updatedReview = await Review.findByIdAndUpdate(
-        id,
-        req.body,
-        { new: true } 
-      );
+      const updatedReview = await Review.findByIdAndUpdate(id, req.body, {
+        new: true,
+      });
       if (!updatedReview) {
         return res.status(404).json({
           message: "Review not found",
@@ -48,8 +56,8 @@ const reviewRouter = (app, io) => {
     }
   });
 
-  // Delete a review
-  router.delete("/deleteReview/:id", async (req, res) => {
+  // Delete a review (secured with Keycloak)
+  router.delete("/deleteReview/:id", keycloak.protect(), async (req, res) => {
     const { id } = req.params;
     try {
       const removedReview = await Review.findByIdAndDelete(id);
@@ -64,8 +72,8 @@ const reviewRouter = (app, io) => {
     }
   });
 
-  // Get a review by ID
-  router.get("/getReview/:id", (req, res) => {
+  // Get a review by ID (secured with Keycloak)
+  router.get("/getReview/:id", keycloak.protect(), (req, res) => {
     const { id } = req.params;
     Review.findById(id)
       .then((review) => {

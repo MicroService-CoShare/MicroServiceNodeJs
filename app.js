@@ -3,8 +3,8 @@ const cors = require("cors");
 const mongoose = require("mongoose");
 const reviewRouter = require("./routes/review");
 const requestRouter = require("./routes/request");
-const { registerWithEureka } = require('./eureka/eureka-client');
-const keycloak = require("./keycloak/keycloak-config");
+const Keycloak = require("keycloak-connect");
+const { registerWithEureka } = require("./eureka/eureka-client");
 
 require("dotenv").config();
 
@@ -12,7 +12,13 @@ require("dotenv").config();
 const app = express();
 app.use(cors());
 
-// Initialize Keycloak middleware
+const keycloak = new Keycloak({
+  "realm": process.env.KEYCLOAK_REALM,
+  "auth-server-url": process.env.KEYCLOAK_AUTH_SERVER_URL,
+  "bearer-only": true,
+  "resource": process.env.KEYCLOAK_CLIENT_ID,
+});
+
 app.use(keycloak.middleware());
 
 // Connect to MongoDB
@@ -23,7 +29,7 @@ mongoose
     useUnifiedTopology: true,
   })
   .then(() => {
-    console.log("Connected to database");
+    console.log("Connected to the database");
   })
   .catch((error) => {
     console.error("Error connecting to the database:", error.message);
@@ -35,10 +41,24 @@ app.use(express.json());
 app.use("/review", reviewRouter);
 app.use("/request", requestRouter);
 
+// Login route
+app.get("/login", keycloak.protect(), (req, res) => {
+  res.send("Successfully authenticated!");
+});
+
+// Logout route
+app.get("/logout", (req, res) => {
+  req.kauth.grant.access_token = null;
+  req.kauth.grant.refresh_token = null;
+  req.logout();
+  res.send("Logged out successfully.");
+});
+
 const port = process.env.PORT || 3006;
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
 });
+
 
 // Register with Eureka
 // registerWithEureka();

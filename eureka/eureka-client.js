@@ -8,7 +8,7 @@ function registerWithEureka() {
       hostName: "nodemicroservice",
       ipAddr: "127.0.0.1",
       port: {
-        $: 3007,
+        $: 3005,
         "@enabled": true,
       },
       vipAddress: "nodemicroservice",
