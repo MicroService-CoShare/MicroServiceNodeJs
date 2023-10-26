@@ -5,7 +5,7 @@ const reviewRouter = require("./routes/review");
 const requestRouter = require("./routes/request");
 const Keycloak = require("keycloak-connect");
 const { registerWithEureka } = require("./eureka/eureka-client");
-const { registerMongoDBWithEureka } = require("./eureka/eureka-client-mongods")
+const { registerMongoDBWithEureka } = require("./eureka/eureka-client-mongods");
 
 require("dotenv").config();
 
@@ -14,10 +14,10 @@ const app = express();
 app.use(cors());
 
 const keycloak = new Keycloak({
-  "realm": process.env.KEYCLOAK_REALM,
+  realm: process.env.KEYCLOAK_REALM,
   "auth-server-url": process.env.KEYCLOAK_AUTH_SERVER_URL,
   "bearer-only": true,
-  "resource": process.env.KEYCLOAK_CLIENT_ID,
+  resource: process.env.KEYCLOAK_CLIENT_ID,
 });
 
 app.use(keycloak.middleware());
@@ -60,9 +60,8 @@ app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
 });
 
-
 // Register with Eureka
- registerWithEureka();
+registerWithEureka();
 
- // Register with Eureka for mongo
- registerMongoDBWithEureka();
+// Register with Eureka for MongoDB
+registerMongoDBWithEureka();
