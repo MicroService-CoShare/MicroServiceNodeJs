@@ -18,21 +18,41 @@ function registerWithEureka() {
       },
     },
     eureka: {
-      serviceUrls: {
-        default: ["http://discovery:8761/eureka/"],
+      eureka: {
+        host: "discovery",
+        port: 8761,
+        servicePath: "/eureka/apps/",
+        maxRetries: 10,
+        requestRetryDelay: 2000,
       },
     },
   });
 
   eureka.logger.level("debug");
 
-  // Start the Eureka client registration
-  eureka.start();
-
-  // Handle any cleanup on process exit
-  process.on("SIGINT", () => {
-    eureka.stop(() => process.exit());
+  eureka.start((error) => {
+    console.log(error || "user service registered");
   });
+
+  function exitHandler(options, exitCode) {
+    if (options.cleanup) {
+    }
+    if (exitCode || exitCode === 0) console.log(exitCode);
+    if (options.exit) {
+      eureka.stop();
+    }
+  }
+
+  eureka.on("deregistered", () => {
+    process.exit();
+    console.log("after deregistered");
+  });
+
+  eureka.on("started", () => {
+    console.log("eureka host  " + eurekaHost);
+  });
+
+  process.on("SIGINT", exitHandler.bind(null, { exit: true }));
 }
 
 module.exports = { registerWithEureka };

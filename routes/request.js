@@ -1,22 +1,13 @@
 const Request = require("../model/request");
 const express = require("express");
 const router = express.Router();
-const Keycloak = require("keycloak-connect");
 
 require("dotenv").config();
 
-const keycloak = new Keycloak(
-  {
-    realm: process.env.KEYCLOAK_REALM,
-    "auth-server-url": process.env.KEYCLOAK_AUTH_SERVER_URL,
-    "bearer-only": true,
-    resource: process.env.KEYCLOAK_CLIENT_ID,
-  }
-);
 
 const requestRouter = (app) => {
-  // GET requests (secured with Keycloak)
-  router.get("/getRequests", keycloak.protect(), async (req, res) => {
+  // GET requests 
+  router.get("/getRequests", async (req, res) => {
     try {
       const requests = await Request.find();
       res.json(requests);
@@ -26,7 +17,7 @@ const requestRouter = (app) => {
   });
 
   // Add a request
-  router.post("/addRequest", keycloak.protect(), async (req, res) => {
+  router.post("/addRequest", async (req, res) => {
     const request = new Request({
       status: req.body.status,
     });
@@ -40,7 +31,7 @@ const requestRouter = (app) => {
   });
 
   // Update a request
-  router.put("/updateRequest/:id", keycloak.protect(), async (req, res) => {
+  router.put("/updateRequest/:id",  async (req, res) => {
     const { id } = req.params;
     try {
       const updatedRequest = await Request.findByIdAndUpdate(id, req.body, {
@@ -58,7 +49,7 @@ const requestRouter = (app) => {
   });
 
   // Delete a request
-  router.delete("/deleteRequest/:id", keycloak.protect(), async (req, res) => {
+  router.delete("/deleteRequest/:id",  async (req, res) => {
     const { id } = req.params;
     try {
       const removedRequest = await Request.findByIdAndDelete(id);
@@ -74,7 +65,7 @@ const requestRouter = (app) => {
   });
 
   // Get a request by ID
-  router.get("/getRequest/:id", keycloak.protect(), (req, res) => {
+  router.get("/getRequest/:id",  (req, res) => {
     const { id } = req.params;
     Request.findById(id)
       .then((request) => {
