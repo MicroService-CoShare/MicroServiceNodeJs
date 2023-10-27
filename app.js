@@ -3,23 +3,13 @@ const cors = require("cors");
 const mongoose = require("mongoose");
 const reviewRouter = require("./routes/review");
 const requestRouter = require("./routes/request");
-const Keycloak = require("keycloak-connect");
 const { registerWithEureka } = require("./eureka/eureka-client");
-
 require("dotenv").config();
 
 // Create an instance of the Express.js application
 const app = express();
 app.use(cors());
 
-const keycloak = new Keycloak({
-  realm: process.env.KEYCLOAK_REALM,
-  "auth-server-url": process.env.KEYCLOAK_AUTH_SERVER_URL,
-  "bearer-only": true,
-  resource: process.env.KEYCLOAK_CLIENT_ID,
-});
-
-app.use(keycloak.middleware());
 
 // Connect to MongoDB
 mongoose.set("strictQuery", true);
@@ -42,7 +32,7 @@ app.use("/review", reviewRouter);
 app.use("/request", requestRouter);
 
 // Login route
-app.get("/login", keycloak.protect(), (req, res) => {
+app.get("/login", (req, res) => {
   res.send("Successfully authenticated!");
 });
 
@@ -60,5 +50,4 @@ app.listen(port, () => {
 });
 
 // Register with Eureka
-registerWithEureka();
-
+registerWithEureka("nodejs", 3005);

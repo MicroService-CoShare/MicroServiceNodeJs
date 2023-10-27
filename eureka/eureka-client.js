@@ -1,36 +1,37 @@
 const Eureka = require("eureka-js-client").Eureka;
+const eurekaHost = "discovery"; // Use the service name as the host
+const eurekaPort = 8761;
+const hostName = "localhost";
+const ipAddr = "192.168.16.3";
 
-function registerWithEureka() {
-
-  const eureka = new Eureka({
+exports.registerWithEureka = function (appName, PORT) {
+  const client = new Eureka({
     instance: {
-      app: "nodemicroservice",
-      hostName: "localhost",
-      ipAddr: "127.0.0.1",
+      app: appName,
+      hostName: hostName,
+      ipAddr: ipAddr,
       port: {
-        $: 3005,
-        "@enabled": true,
+        $: PORT,
+        "@enabled": "true",
       },
-      vipAddress: "nodemicroservice",
+      vipAddress: appName,
       dataCenterInfo: {
         "@class": "com.netflix.appinfo.InstanceInfo$DefaultDataCenterInfo",
         name: "MyOwn",
       },
     },
     eureka: {
-      eureka: {
-        host: "discovery",
-        port: 8761,
-        servicePath: "/eureka/apps/",
-        maxRetries: 10,
-        requestRetryDelay: 2000,
-      },
+      host: eurekaHost, // Use the service name as the host
+      port: eurekaPort,
+      servicePath: "/eureka/apps/",
+      maxRetries: 10,
+      requestRetryDelay: 2000,
     },
   });
 
-  eureka.logger.level("debug");
+  client.logger.level("debug");
 
-  eureka.start((error) => {
+  client.start((error) => {
     console.log(error || "user service registered");
   });
 
@@ -39,20 +40,18 @@ function registerWithEureka() {
     }
     if (exitCode || exitCode === 0) console.log(exitCode);
     if (options.exit) {
-      eureka.stop();
+      client.stop();
     }
   }
 
-  eureka.on("deregistered", () => {
+  client.on("deregistered", () => {
     process.exit();
     console.log("after deregistered");
   });
 
-  eureka.on("started", () => {
+  client.on("started", () => {
     console.log("eureka host  " + eurekaHost);
   });
 
   process.on("SIGINT", exitHandler.bind(null, { exit: true }));
-}
-
-module.exports = { registerWithEureka };
+};

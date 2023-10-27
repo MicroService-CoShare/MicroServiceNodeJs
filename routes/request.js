@@ -18,6 +18,8 @@ const requestRouter = (app) => {
 
   // Add a request
   router.post("/addRequest", async (req, res) => {
+    console.log('addRequest')
+    console.log(req.body)
     const request = new Request({
       status: req.body.status,
     });
